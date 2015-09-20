@@ -24,24 +24,36 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 var u = "http://www.telelistas.net/pa/belem/arquitetos?pagina=1";
 var limit = 3;
 // var u = "http://www.telelistas.net/templates/envia.aspx?tipo=anuncioemail&email_dest=dipiscina@oi.com.br&nome_dest=Di%20Piscina%20-%20Mangueir%e3o&logvc=3&id=300733683";
-// var u = '?foo=bar';
+// var u = 'http://www.telelistas.net/templates/logredirect.aspx?idcliente=11619186&tpmat=IG&ct=3760506&mt=2&uf=pa&id=300740001&cidade=91000&bairro=0&titulo=5703&acao=email&link=%2ftemplates%2fenvia.aspx%3ftipo%3danuncioemail%26email_dest%3disoeng%40isoeng.eng.br%26nome_dest%3dIsoeng+-+Engenharia+e+Gest%e3o+%26logvc%3d3%26id%3d300740001';
 // var parsed = queryString.parse(unescape(u));
+// console.log(parsed);
 // for (var i = 1; i <= limit; i++) {
 /*findArquitetos(u, function(result) {
     console.log(result);
 });*/
+var all = [];
 walk('pages', function(filePath, stat) {
     // do something with "filePath"...
     fs.readFile(filePath, 'utf8', function(err, contents) {
         $ = cheerio.load(contents, {
             normalizeWhitespace: true
         });
-        // console.log(body);
         $('td.text_resultado_ib').each(function() {
-            console.log($(this).parent().parent().text());
+            $(this).parent().parent().find('td.ib_ser a').each(function() {
+                console.log($(this).text(),$(this).attr("href"));
+                var hasEmail = ($(this).text() === "e-mail");
+                if (hasEmail) {
+                    var prev = "window.open('";
+                    var next = "', 'Enviar', 'scrollbars=no,width=360,height=605,resizeable=yes');return false;";
+                    var text_url = $(this).attr("onclick").replace(prev,"").replace(next,""); 
+                    var obj = queryString.parse(unescape(text_url));
+                    all.push({empresa:obj.nome_dest,email:obj.email_dest});
+                }
+            });
         });
     });
 });
+console.log(all);
 // }
 /*
 erro_class="tit_erro"
