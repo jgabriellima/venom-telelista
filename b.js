@@ -4,6 +4,9 @@ var url = require('url');
 var queryString = require('query-string');
 var fs = require('fs');
 
+Array.prototype.contains = function(element) {
+    return this.indexOf(element) > -1;
+};
 
 function walk(currentDirPath, callback) {
     var fs = require('fs'),
@@ -35,25 +38,34 @@ var all = [];
 walk('pages', function(filePath, stat) {
     // do something with "filePath"...
     fs.readFile(filePath, 'utf8', function(err, contents) {
+        console.log(filePath);
         $ = cheerio.load(contents, {
             normalizeWhitespace: true
         });
         $('td.text_resultado_ib').each(function() {
             $(this).parent().parent().find('td.ib_ser a').each(function() {
-                console.log($(this).text(),$(this).attr("href"));
+                // console.log($(this).text(),$(this).attr("href"));
                 var hasEmail = ($(this).text() === "e-mail");
                 if (hasEmail) {
                     var prev = "window.open('";
                     var next = "', 'Enviar', 'scrollbars=no,width=360,height=605,resizeable=yes');return false;";
-                    var text_url = $(this).attr("onclick").replace(prev,"").replace(next,""); 
+                    var text_url = $(this).attr("onclick").replace(prev, "").replace(next, "");
                     var obj = queryString.parse(unescape(text_url));
-                    all.push({empresa:obj.nome_dest,email:obj.email_dest});
+                    // console.log(obj);
+                    if (!all.contains(obj.email_dest)) {
+                        all.push(obj.email_dest);
+                        var str = obj.nome_dest + "," + obj.email_dest + "\n";
+                        fs.appendFile('empresas_belem.txt', str, encoding = 'utf8', function(err) {
+                            if (err) throw err;
+                        });
+                    }
+
                 }
             });
         });
     });
 });
-console.log(all);
+// console.log(all);
 // }
 /*
 erro_class="tit_erro"
