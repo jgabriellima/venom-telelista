@@ -59,7 +59,9 @@ walk('pages', function(filePath, stat) {
                             if (err) throw err;
                         });
                     }
-
+                } else if($(this).text() === "+info"){
+                    var url_detail = $(this).attr("href");
+                    console.log(url_detail);
                 }
             });
         });
